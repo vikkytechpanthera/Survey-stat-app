@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Survey & Statistics Software Package</title>
+<style>
+  :root {
+    --bg: #f0f4f8; --surface: #ffffff; --surface2: #e8edf3;
+    --border: #c9d4e0; --text: #1a2332; --text2: #4a5568;
+    --primary: #2563eb; --primary-h: #1d4ed8; --accent: #059669;
+    --accent2: #7c3aed; --accent3: #dc2626; --shadow: rgba(0,0,0,0.1);
+    --header-bg: linear-gradient(135deg,#1e3a5f,#2563eb);
+    --tab-active: #2563eb; --tab-text: #fff; --input-bg: #fff;
+    --result-bg: #f0fdf4; --result-border: #bbf7d0;
+    --table-head: #1e3a5f; --table-row: #f8fafc; --table-alt: #eef2ff;
+  }
+  .dark {
+    --bg: #0f172a; --surface: #1e293b; --surface2: #273549;
+    --border: #334155; --text: #e2e8f0; --text2: #94a3b8;
+    --primary: #3b82f6; --primary-h: #2563eb; --accent: #10b981;
+    --accent2: #a78bfa; --accent3: #f87171; --shadow: rgba(0,0,0,0.4);
+    --header-bg: linear-gradient(135deg,#0f172a,#1e3a5f);
+    --tab-active: #3b82f6; --tab-text: #fff; --input-bg: #1e293b;
+    --result-bg: #052e16; --result-border: #166534;
+    --table-head: #1e3a5f; --table-row: #1e293b; --table-alt: #1a2744;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;transition:background .3s,color .3s,border-color .3s;}
+  body{font-family:'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+  header{background:var(--header-bg);color:#fff;padding:18px 24px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 12px var(--shadow);}
+  header h1{font-size:1.2rem;font-weight:700;letter-spacing:.5px;}
+  header p{font-size:.75rem;opacity:.8;margin-top:2px;}
+  .theme-btn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;padding:7px 14px;border-radius:20px;cursor:pointer;font-size:.8rem;display:flex;align-items:center;gap:6px;white-space:nowrap;}
+  .theme-btn:hover{background:rgba(255,255,255,.25);}
+  .tabs{display:flex;background:var(--surface);border-bottom:2px solid var(--border);overflow-x:auto;padding:0 16px;}
+  .tab{padding:14px 20px;cursor:pointer;font-size:.85rem;font-weight:600;color:var(--text2);border-bottom:3px solid transparent;white-space:nowrap;margin-bottom:-2px;}
+  .tab.active{color:var(--tab-active);border-bottom-color:var(--tab-active);}
+  .tab:hover:not(.active){color:var(--text);}
+  .content{max-width:960px;margin:0 auto;padding:24px 16px;}
+  .panel{display:none;} .panel.active{display:block;}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px;margin-bottom:20px;box-shadow:0 2px 8px var(--shadow);}
+  .card h2{font-size:1rem;font-weight:700;margin-bottom:4px;color:var(--primary);}
+  .card p.desc{font-size:.8rem;color:var(--text2);margin-bottom:16px;}
+  label{display:block;font-size:.82rem;font-weight:600;margin-bottom:5px;color:var(--text2);}
+  input,select{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:.88rem;background:var(--input-bg);color:var(--text);outline:none;}
+  input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.15);}
+  .row{display:grid;gap:12px;margin-bottom:12px;}
+  .r2{grid-template-columns:1fr 1fr;} .r3{grid-template-columns:1fr 1fr 1fr;} .r4{grid-template-columns:1fr 1fr 1fr 1fr;}
+  .btn{padding:10px 20px;border:none;border-radius:8px;cursor:pointer;font-size:.85rem;font-weight:600;}
+  .btn-primary{background:var(--primary);color:#fff;} .btn-primary:hover{background:var(--primary-h);}
+  .btn-success{background:var(--accent);color:#fff;}
+  .btn-danger{background:var(--accent3);color:#fff;padding:6px 12px;font-size:.78rem;}
+  .btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border);}
+  .btn-group{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;}
+  .result-box{background:var(--result-bg);border:1px solid var(--result-border);border-radius:10px;padding:18px;margin-top:16px;}
+  .result-box h3{font-size:.9rem;font-weight:700;margin-bottom:12px;color:var(--accent);}
+  .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:12px;}
+  .stat-item{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center;}
+  .stat-item .val{font-size:1.4rem;font-weight:700;color:var(--primary);}
+  .stat-item .lbl{font-size:.75rem;color:var(--text2);margin-top:4px;}
+  table{width:100%;border-collapse:collapse;font-size:.82rem;margin-top:10px;}
+  th{background:var(--table-head);color:#fff;padding:10px 8px;text-align:center;}
+  td{padding:8px;text-align:center;border-bottom:1px solid var(--border);}
+  tr:nth-child(even) td{background:var(--table-alt);}
+  tr:nth-child(odd) td{background:var(--table-row);}
+  .station-row{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:10px;position:relative;}
+  .station-row .stn-label{font-size:.78rem;font-weight:700;color:var(--primary);margin-bottom:8px;}
+  .del-btn{position:absolute;top:10px;right:10px;}
+  .steps{font-size:.8rem;color:var(--text2);line-height:1.8;margin-top:10px;}
+  .steps b{color:var(--text);}
+  .badge{display:inline-block;padding:3px 8px;border-radius:12px;font-size:.72rem;font-weight:700;background:var(--accent2);color:#fff;margin-left:6px;}
+  .warning{background:#fef3c7;border:1px solid #fcd34d;color:#92400e;padding:10px 14px;border-radius:8px;font-size:.82rem;margin-bottom:12px;}
+  .dark .warning{background:#431407;border-color:#b45309;color:#fcd34d;}
+  .divider{border:none;border-top:1px solid var(--border);margin:16px 0;}
+  @media(max-width:600px){.r2,.r3,.r4{grid-template-columns:1fr;} header h1{font-size:1rem;}}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>⚙️ Survey & Statistics Software Package</h1>
+    <p>PD 2025 Computer Programming and Applications — Mr. Adewumi Aweda FSS</p>
+  </div>
+  <button class="theme-btn" onclick="toggleTheme()">🌙 Dark Mode</button>
+</header>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab(0)">📊 Module 1 — Statistics</div>
+  <div class="tab" onclick="switchTab(1)">📐 Module 2 — Traverse</div>
+  <div class="tab" onclick="switchTab(2)">🗺️ Module 3 — Layout Survey</div>
+</div>
+
+<!-- ===================== MODULE 1 ===================== -->
+<div class="content">
+<div class="panel active" id="p0">
+  <div class="card">
+    <h2>Statistical Analysis</h2>
+    <p class="desc">Enter N observed data values to compute Mean, Standard Deviation, and Variance.</p>
+    <div class="row r2">
+      <div><label>Number of Observations (N)</label>
+        <input type="number" id="nCount" min="2" max="100" value="5" placeholder="e.g. 5"/>
+      </div>
+      <div style="display:flex;align-items:flex-end;">
+        <button class="btn btn-secondary" onclick="genStatInputs()">Generate Input Fields</button>
+      </div>
+    </div>
+    <div id="statInputs"></div>
+    <div class="btn-group">
+      <button class="btn btn-primary" onclick="calcStats()">Calculate Statistics</button>
+      <button class="btn btn-secondary" onclick="clearStats()">Clear</button>
+    </div>
+    <div id="statResult"></div>
+  </div>
+</div>
+
+<!-- ===================== MODULE 2 ===================== -->
+<div class="panel" id="p1">
+  <div class="card">
+    <h2>Traverse Coordinate Computation</h2>
+    <p class="desc">Enter the starting station coordinates, then add traverse legs with adjusted bearings and horizontal distances.</p>
+    <div class="row r2">
+      <div><label>Starting Easting (E₀) (m)</label><input type="number" id="e0" placeholder="e.g. 1000.000" step="0.001"/></div>
+      <div><label>Starting Northing (N₀) (m)</label><input type="number" id="n0" placeholder="e.g. 2000.000" step="0.001"/></div>
+    </div>
+    <div><label>Starting Station Name</label><input type="text" id="s0name" placeholder="e.g. A" style="max-width:200px"/></div>
+    <hr class="divider"/>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <b style="font-size:.88rem;">Traverse Legs</b>
+      <button class="btn btn-success" onclick="addLeg()" style="padding:7px 14px;font-size:.8rem;">+ Add Leg</button>
+    </div>
+    <div id="legInputs"></div>
+    <div class="btn-group">
+      <button class="btn btn-primary" onclick="calcTraverse()">Compute Coordinates</button>
+      <button class="btn btn-secondary" onclick="clearTraverse()">Clear</button>
+    </div>
+    <div id="travResult"></div>
+  </div>
+</div>
+
+<!-- ===================== MODULE 3 ===================== -->
+<div class="panel" id="p2">
+  <div class="card">
+    <h2>Back Computation & Area from Layout Survey</h2>
+    <p class="desc">Enter coordinates for up to 20 plots. Back computation gives bearing & distance between consecutive stations; area is calculated using the Coordinate (Shoelace) method.</p>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <b style="font-size:.88rem;">Plot Corner Stations <span class="badge" id="plotCount">0 / 20</span></b>
+      <button class="btn btn-success" onclick="addPlot()" style="padding:7px 14px;font-size:.8rem;">+ Add Station</button>
+    </div>
+    <div id="plotInputs"></div>
+    <div class="btn-group">
+      <button class="btn btn-primary" onclick="calcLayout()">Compute Back + Area</button>
+      <button class="btn btn-secondary" onclick="clearLayout()">Clear All</button>
+      <button class="btn btn-secondary" onclick="loadSample()">Load Sample (5 pts)</button>
+    </div>
+    <div id="layoutResult"></div>
+  </div>
+</div>
+</div><!-- end content -->
+
+<script>
+// ── THEME ──────────────────────────────────────────────
+const isDark = () => document.body.classList.contains('dark');
+function toggleTheme(){
+  document.body.classList.toggle('dark');
+  document.querySelector('.theme-btn').textContent = isDark() ? '☀️ Light Mode' : '🌙 Dark Mode';
+}
+
+// ── TABS ──────────────────────────────────────────────
+function switchTab(i){
+  document.querySelectorAll('.tab').forEach((t,j)=>t.classList.toggle('active',i===j));
+  document.querySelectorAll('.panel').forEach((p,j)=>p.classList.toggle('active',i===j));
+}
+
+// ══════════════════════════════════════════════════════
+// MODULE 1 — STATISTICS
+// ══════════════════════════════════════════════════════
+function genStatInputs(){
+  const n = parseInt(document.getElementById('nCount').value);
+  if(isNaN(n)||n<2){alert('Please enter N ≥ 2');return;}
+  let html='<div class="row r4" style="margin-bottom:4px;">';
+  for(let i=1;i<=n;i++){
+    if(i>1&&(i-1)%4===0) html+='</div><div class="row r4" style="margin-bottom:4px;">';
+    html+=`<div><label>x${i}</label><input type="number" class="sval" step="any" placeholder="Value ${i}"/></div>`;
+  }
+  html+='</div>';
+  document.getElementById('statInputs').innerHTML=html;
+}
+
+function calcStats(){
+  const vals=[...document.querySelectorAll('.sval')].map(i=>parseFloat(i.value)).filter(v=>!isNaN(v));
+  if(vals.length<2){alert('Please enter at least 2 valid values.');return;}
+  const n=vals.length, sum=vals.reduce((a,b)=>a+b,0), mean=sum/n;
+  const variance=vals.reduce((a,v)=>a+Math.pow(v-mean,2),0)/(n-1);
+  const std=Math.sqrt(variance);
+  let steps=`<div class="steps"><b>Values:</b> ${vals.join(', ')}<br>
+  <b>N =</b> ${n}<br>
+  <b>Σx =</b> ${sum.toFixed(4)}<br>
+  <b>Mean (x̄) =</b> Σx / N = ${sum.toFixed(4)} / ${n} = <b>${mean.toFixed(4)}</b><br>
+  <b>Σ(x−x̄)² =</b> ${vals.map(v=>`(${v}−${mean.toFixed(3)})²=${Math.pow(v-mean,2).toFixed(4)}`).join(' + ')}<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;= ${vals.reduce((a,v)=>a+Math.pow(v-mean,2),0).toFixed(4)}<br>
+  <b>Variance (s²) =</b> Σ(x−x̄)² / (N−1) = <b>${variance.toFixed(6)}</b><br>
+  <b>Std Dev (s) =</b> √Variance = <b>${std.toFixed(6)}</b></div>`;
+  document.getElementById('statResult').innerHTML=`
+  <div class="result-box"><h3>📊 Statistical Results</h3>
+  <div class="stat-grid">
+    <div class="stat-item"><div class="val">${mean.toFixed(4)}</div><div class="lbl">Mean (x̄)</div></div>
+    <div class="stat-item"><div class="val">${variance.toFixed(4)}</div><div class="lbl">Variance (s²)</div></div>
+    <div class="stat-item"><div class="val">${std.toFixed(4)}</div><div class="lbl">Std Deviation (s)</div></div>
+    <div class="stat-item"><div class="val">${n}</div><div class="lbl">N (Observations)</div></div>
+  </div>${steps}</div>`;
+}
+
+function clearStats(){
+  document.getElementById('statInputs').innerHTML='';
+  document.getElementById('statResult').innerHTML='';
+  document.getElementById('nCount').value=5;
+}
+
+// ══════════════════════════════════════════════════════
+// MODULE 2 — TRAVERSE
+// ══════════════════════════════════════════════════════
+let legCount=0;
+function addLeg(){
+  legCount++;
+  const d=document.createElement('div');
+  d.className='station-row'; d.id=`leg${legCount}`;
+  d.innerHTML=`<div class="stn-label">Leg ${legCount}</div>
+  <button class="btn btn-danger del-btn" onclick="removeLeg(${legCount})">✕</button>
+  <div class="row r4">
+    <div><label>To Station</label><input type="text" id="lname${legCount}" placeholder="e.g. B"/></div>
+    <div><label>Bearing (°)</label><input type="number" id="lbdeg${legCount}" min="0" max="359" placeholder="0–359" step="1"/></div>
+    <div><label>Bearing (′)</label><input type="number" id="lbmin${legCount}" min="0" max="59" placeholder="0–59" step="1"/></div>
+    <div><label>Bearing (″)</label><input type="number" id="lbsec${legCount}" min="0" max="59.9" placeholder="0–59" step="0.1"/></div>
+  </div>
+  <div class="row r2">
+    <div><label>Horizontal Distance (m)</label><input type="number" id="ldist${legCount}" placeholder="e.g. 150.250" step="0.001"/></div>
+  </div>`;
+  document.getElementById('legInputs').appendChild(d);
+}
+
+function removeLeg(id){document.getElementById(`leg${id}`).remove();}
+
+function dmsToRad(d,m,s){return((d+m/60+s/3600)*Math.PI/180);}
+function radToDms(r){
+  let deg=r*180/Math.PI; if(deg<0)deg+=360;
+  const d=Math.floor(deg),m=Math.floor((deg-d)*60);
+  const s=((deg-d)*60-m)*60;
+  return`${d}° ${m}′ ${s.toFixed(1)}″`;
+}
+
+function calcTraverse(){
+  const e0=parseFloat(document.getElementById('e0').value);
+  const n0=parseFloat(document.getElementById('n0').value);
+  const s0=document.getElementById('s0name').value||'Start';
+  if(isNaN(e0)||isNaN(n0)){alert('Enter valid starting coordinates.');return;}
+  const legs=[...document.getElementById('legInputs').querySelectorAll('.station-row')];
+  if(legs.length===0){alert('Add at least one traverse leg.');return;}
+  let rows=`<tr><th>#</th><th>Station</th><th>Bearing</th><th>Dist (m)</th><th>Departure (ΔE)</th><th>Latitude (ΔN)</th><th>Easting (E)</th><th>Northing (N)</th></tr>`;
+  rows+=`<tr><td>0</td><td><b>${s0}</b></td><td>—</td><td>—</td><td>—</td><td>—</td><td>${e0.toFixed(3)}</td><td>${n0.toFixed(3)}</td></tr>`;
+  let cE=e0,cN=n0,valid=true;
+  legs.forEach((leg,i)=>{
+    const id=leg.id.replace('leg','');
+    const name=document.getElementById(`lname${id}`).value||`Stn${i+1}`;
+    const deg=parseFloat(document.getElementById(`lbdeg${id}`).value)||0;
+    const min=parseFloat(document.getElementById(`lbmin${id}`).value)||0;
+    const sec=parseFloat(document.getElementById(`lbsec${id}`).value)||0;
+    const dist=parseFloat(document.getElementById(`ldist${id}`).value);
+    if(isNaN(dist)){valid=false;return;}
+    const rad=dmsToRad(deg,min,sec);
+    const dE=dist*Math.sin(rad), dN=dist*Math.cos(rad);
+    cE+=dE; cN+=dN;
+    rows+=`<tr><td>${i+1}</td><td><b>${name}</b></td><td>${deg}°${min}′${sec}″</td><td>${dist.toFixed(3)}</td><td>${dE.toFixed(3)}</td><td>${dN.toFixed(3)}</td><td>${cE.toFixed(3)}</td><td>${cN.toFixed(3)}</td></tr>`;
+  });
+  if(!valid){alert('Please enter valid distances for all legs.');return;}
+  document.getElementById('travResult').innerHTML=`
+  <div class="result-box"><h3>📐 Computed Traverse Coordinates</h3>
+  <div style="overflow-x:auto;"><table>${rows}</table></div>
+  <div class="steps" style="margin-top:12px;"><b>Formula:</b> ΔE = D·sin(θ), ΔN = D·cos(θ)<br>
+  E<sub>i+1</sub> = E<sub>i</sub> + ΔE &nbsp;|&nbsp; N<sub>i+1</sub> = N<sub>i</sub> + ΔN</div></div>`;
+}
+
+function clearTraverse(){
+  document.getElementById('e0').value='';
+  document.getElementById('n0').value='';
+  document.getElementById('s0name').value='';
+  document.getElementById('legInputs').innerHTML='';
+  document.getElementById('travResult').innerHTML='';
+  legCount=0;
+}
+
+// ══════════════════════════════════════════════════════
+// MODULE 3 — LAYOUT SURVEY
+// ══════════════════════════════════════════════════════
+let plotPts=[];
+function addPlot(){
+  if(plotPts.length>=20){alert('Maximum 20 stations reached.');return;}
+  plotPts.push({id:Date.now()});
+  renderPlotInputs();
+}
+
+function removePlot(id){plotPts=plotPts.filter(p=>p.id!==id);renderPlotInputs();}
+
+function renderPlotInputs(){
+  document.getElementById('plotCount').textContent=`${plotPts.length} / 20`;
+  const c=document.getElementById('plotInputs');
+  c.innerHTML=plotPts.map((p,i)=>`
+  <div class="station-row">
+    <div class="stn-label">Station ${i+1}</div>
+    <button class="btn btn-danger del-btn" onclick="removePlot(${p.id})">✕</button>
+    <div class="row r3">
+      <div><label>Station Name</label><input type="text" id="pname${p.id}" placeholder="e.g. P${i+1}" value="${p.name||''}"/></div>
+      <div><label>Easting E (m)</label><input type="number" id="pe${p.id}" step="0.001" placeholder="e.g. 500.000" value="${p.e||''}"/></div>
+      <div><label>Northing N (m)</label><input type="number" id="pn${p.id}" step="0.001" placeholder="e.g. 300.000" value="${p.n||''}"/></div>
+    </div>
+  </div>`).join('');
+}
+
+function loadSample(){
+  plotPts=[];
+  const pts=[{name:'P1',e:100,n:100},{name:'P2',e:200,n:100},{name:'P3',e:250,n:200},{name:'P4',e:150,n:270},{name:'P5',e:50,n:200}];
+  pts.forEach(p=>plotPts.push({id:Date.now()+Math.random(),...p}));
+  renderPlotInputs();
+  // pre-fill values
+  setTimeout(()=>{
+    plotPts.forEach(p=>{
+      const ne=document.getElementById(`pe${p.id}`);
+      const nn=document.getElementById(`pn${p.id}`);
+      const nm=document.getElementById(`pname${p.id}`);
+      if(ne)ne.value=p.e; if(nn)nn.value=p.n; if(nm)nm.value=p.name;
+    });
+  },50);
+}
+
+function calcLayout(){
+  const pts=plotPts.map(p=>{
+    const name=document.getElementById(`pname${p.id}`)?.value||`P`;
+    const e=parseFloat(document.getElementById(`pe${p.id}`)?.value);
+    const n=parseFloat(document.getElementById(`pn${p.id}`)?.value);
+    return{name,e,n};
+  }).filter(p=>!isNaN(p.e)&&!isNaN(p.n));
+  if(pts.length<3){alert('Enter at least 3 valid stations for area computation.');return;}
+
+  // Back computation
+  let bcRows=`<tr><th>From</th><th>To</th><th>ΔE</th><th>ΔN</th><th>Bearing</th><th>Distance (m)</th></tr>`;
+  for(let i=0;i<pts.length;i++){
+    const a=pts[i], b=pts[(i+1)%pts.length];
+    const dE=b.e-a.e, dN=b.n-a.n;
+    const dist=Math.sqrt(dE*dE+dN*dN);
+    let bear=Math.atan2(dE,dN)*180/Math.PI;
+    if(bear<0)bear+=360;
+    const bd=Math.floor(bear),bm=Math.floor((bear-bd)*60),bs=((bear-bd)*60-bm)*60;
+    bcRows+=`<tr><td>${a.name}</td><td>${b.name}</td><td>${dE.toFixed(3)}</td><td>${dN.toFixed(3)}</td><td>${bd}°${bm}′${bs.toFixed(1)}″</td><td>${dist.toFixed(3)}</td></tr>`;
+  }
+
+  // Shoelace area
+  let area=0;
+  for(let i=0;i<pts.length;i++){
+    const j=(i+1)%pts.length;
+    area+=pts[i].e*pts[j].n - pts[j].e*pts[i].n;
+  }
+  area=Math.abs(area)/2;
+  const areaHa=(area/10000).toFixed(4);
+
+  // Coordinate table
+  let ctRows=`<tr><th>#</th><th>Station</th><th>Easting (m)</th><th>Northing (m)</th></tr>`;
+  pts.forEach((p,i)=>ctRows+=`<tr><td>${i+1}</td><td>${p.name}</td><td>${p.e.toFixed(3)}</td><td>${p.n.toFixed(3)}</td></tr>`);
+
+  document.getElementById('layoutResult').innerHTML=`
+  <div class="result-box">
+    <h3>📍 Station Coordinates</h3>
+    <div style="overflow-x:auto;"><table>${ctRows}</table></div>
+    <hr class="divider"/>
+    <h3>🔄 Back Computation (Bearing & Distance)</h3>
+    <div style="overflow-x:auto;"><table>${bcRows}</table></div>
+    <hr class="divider"/>
+    <h3>📏 Surface Area — Coordinate (Shoelace) Method</h3>
+    <div class="stat-grid">
+      <div class="stat-item"><div class="val">${area.toFixed(3)}</div><div class="lbl">Area (m²)</div></div>
+      <div class="stat-item"><div class="val">${areaHa}</div><div class="lbl">Area (hectares)</div></div>
+      <div class="stat-item"><div class="val">${pts.length}</div><div class="lbl">Stations Used</div></div>
+    </div>
+    <div class="steps"><b>Shoelace Formula:</b> A = ½ |Σ(Eᵢ·Nᵢ₊₁ − Eᵢ₊₁·Nᵢ)|<br>
+    <b>Back Computation:</b> D = √(ΔE²+ΔN²) &nbsp;|&nbsp; θ = atan2(ΔE, ΔN)</div>
+  </div>`;
+}
+
+function clearLayout(){
+  plotPts=[];
+  renderPlotInputs();
+  document.getElementById('layoutResult').innerHTML='';
+}
+
+// Init Module 2 with 1 leg
+addLeg();
+</script>
+</body>
+</html>
